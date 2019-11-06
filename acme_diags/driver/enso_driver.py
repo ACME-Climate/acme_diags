@@ -88,17 +88,48 @@ nlat = len(prect_anomaly.getLatitude())
 nlon = len(prect_anomaly.getLongitude())
 
 reg_coe = prect_anomaly[0,:,:](squeeze=1)
+#nlat = 1
+#nlon = 1
 for ilat in range(nlat):
     print(ilat)
     for ilon in range(nlon):
         slope, intercept = genutil.statistics.linearregression(prect_anomaly[:,ilat,ilon],x = nino_index)
         reg_coe[ilat,ilon] = slope
 print(reg_coe.shape)
+fin1.close()
+fin2.close()
         
 print(len(prect_anomaly.getLatitude()))
+fout = cdms2.open('PRECT_nino3_reg_co.nc','w')
+fout.write(reg_coe)
+fout.close()
 
 
+#Plotting
+import cartopy.crs as ccrs
+import matplotlib.pyplot as plt
+import os
+import numpy.ma as ma
 
+
+def add_cyclic(var):
+    lon = var.getLongitude()
+    return var(longitude=(lon[0], lon[0] + 360.0, 'coe'))
+
+var = reg_coe
+var = add_cyclic(var)
+lon = var.getLongitude()
+lat = var.getLatitude()
+var = ma.squeeze(var.asma())
+ax = plt.axes(projection=ccrs.PlateCarree())
+
+plt.contourf(lon, lat, var,
+             transform=ccrs.PlateCarree())
+
+ax.coastlines()
+
+#plt.show()
+plt.savefig('PRECT_nino3_reg_co.png')
 
 
 
