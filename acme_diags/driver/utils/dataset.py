@@ -205,7 +205,7 @@ class Dataset():
         """
         Get the user-defined start and end years.
         """
-        if self.parameters.sets[0] == 'area_mean_time_series':
+        if self.parameters.sets[0] in ['area_mean_time_series','qbo']:
             start_yr = getattr(self.parameters, 'start_yr')
             end_yr = getattr(self.parameters, 'end_yr')
         else:

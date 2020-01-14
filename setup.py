@@ -35,6 +35,7 @@ cosp_histogram_files = get_all_files_in_dir('acme_diags/driver/default_diags', '
 cosp_histogram_files += get_all_files_in_dir('acme_diags/driver/default_diags/legacy_diags', 'cosp_histogram*')
 
 area_mean_time_series = get_all_files_in_dir('acme_diags/driver/default_diags', 'area_mean_time_series*')
+qbo = get_all_files_in_dir('acme_diags/driver/default_diags', 'qbo*')
 
 rgb_files = get_all_files_in_dir('acme_diags/plot/colormaps', '*.rgb')
 control_runs_files = get_all_files_in_dir('acme_diags/driver/control_runs', '*.csv')
@@ -65,6 +66,9 @@ data_files = [
      ),
     (os.path.join(INSTALL_PATH, 'area_mean_time_series'),
      area_mean_time_series
+     ),
+    (os.path.join(INSTALL_PATH, 'qbo'),
+     qbo
      ),
     (INSTALL_PATH,
      ['acme_diags/driver/acme_ne30_ocean_land_mask.nc',
