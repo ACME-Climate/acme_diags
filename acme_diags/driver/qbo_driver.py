@@ -92,6 +92,41 @@ def calc_PSD_fromdeseason(xraw,periodNew):
     PSDxnew0=numpy.interp(periodNew,period0_flipped[:-1],PSDx0_flipped[:-1])
     return PSDxnew0,AMPnew0
 
+panel = [(0.075, 0.70, 0.6, 0.225),
+         (0.075, 0.425, 0.6, 0.225),
+         (0.725, 0.425, 0.2, 0.5),
+         (0.075, 0.075, 0.85, 0.275)]
+
+def plot_panel(n,fig,plottype,parameters,label_size,title,xlabel,ylabel,xaxisrange,yaxisrange,xaxisscale,yaxisscale,xdata,ydata,zdata=None,plotcolors=None,xdata2=None,ydata2=None,xdata_label=None,xdata2_label=None,color_levels=None,color_ticks=None):
+    ax = fig.add_axes(panel[n])  #create new figure axis using dimensions from panel (hard coded)
+    # Plot either a contourf or line plot 
+    if plottype == 'contourf':
+        p1 = ax.contourf(xdata,ydata,zdata,color_levels,cmap=plotcolors)
+        cbar = plt.colorbar(p1,ticks=color_ticks)
+        cbar.ax.tick_params(labelsize=label_size)
+    if plottype == 'line':
+        p1,=ax.plot(xdata,ydata,'-ok')
+        p2,=ax.plot(xdata2,ydata2,'--or')
+        plt.grid('on')
+        ax.legend((p1,p2),(xdata_label,xdata2_label),loc='upper right',fontsize=label_size)
+    #Set title, axes labels
+    ax.set_title(title,size=label_size,weight='demi')
+    ax.set_xlabel(xlabel,size=label_size)
+    ax.set_ylabel(ylabel,size=label_size)
+    #Set axes
+    if yaxisrange[1]<yaxisrange[0]: #invert y axis if necessary
+        ax.invert_yaxis()
+        plt.yscale(yaxisscale)
+        plt.ylim([yaxisrange[0],yaxisrange[1]])
+    else:
+        plt.yscale(yaxisscale)
+        plt.ylim([yaxisrange[0],yaxisrange[1]])
+    plt.xscale(xaxisscale)
+    plt.xlim([xaxisrange[0],xaxisrange[1]])
+    plt.yticks(size=label_size)
+    plt.xticks(size=label_size)
+
+
 def run_diag(parameter):
     variables = parameter.variables
     #regions = parameter.regions
@@ -210,8 +245,93 @@ def run_diag(parameter):
         ax.legend((era_line,e3sm_line),('ERA-interim','E3SM'),loc='upper right',fontsize=label_size)
         fig.savefig('qbo_fig3.png')
 
+        label_size=14
 
-    
+        panel = [(0.075, 0.70, 0.6, 0.225),
+                 (0.075, 0.425, 0.6, 0.225),
+                 (0.725, 0.425, 0.2, 0.5),
+                 (0.075, 0.075, 0.85, 0.275)]
+
+        
+        fig=plt.figure(figsize=(14,14))
+
+
+        ax=fig.add_axes(panel[0])
+        X0,Y0=numpy.meshgrid(numpy.arange(0,months),level0)
+        cmap2 = plt.cm.RdBu_r
+        ax.invert_yaxis()
+        ax.set_title('ERA-interim U 5S-5N',size=label_size,weight='demi')
+        #ax.set_xlabel('month',size=label_size)
+        ax.set_ylabel('hPa',size=label_size)
+        plt.yticks(size=label_size)
+        plt.xticks(size=label_size)
+        plt.yscale('log')
+        plt.ylim([100,1])
+        
+        pcolor_plot=plt.contourf(X0,Y0,qbo0.T,color_levels,cmap=cmap2)
+        cbar0=plt.colorbar(pcolor_plot,ticks=[-50, -25, -5, 5, 25, 50]) 
+        cbar0.ax.tick_params(labelsize=label_size)
+
+        ax2=fig.add_axes(panel[1])
+        X1,Y1=numpy.meshgrid(numpy.arange(0,months),level1)
+        cmap2 = plt.cm.RdBu_r
+        ax2.invert_yaxis()
+        plt.yscale('log')
+        plt.yticks(size=label_size)
+        plt.xticks(size=label_size)
+        plt.ylim([100,1])
+        pcolor_plot=ax2.contourf(X1,Y1,qbo1.T,color_levels,cmap=cmap2)
+        cbar0=plt.colorbar(pcolor_plot,ticks=[-50, -25, -5, 5, 25, 50]) 
+        cbar0.ax.tick_params(labelsize=label_size)
+        ax2.set_title('E3SM U 5S-5N',size=label_size,weight='demi')
+        ax2.set_xlabel('month',size=label_size)
+        ax2.set_ylabel('hPa',size=label_size)
+
+        ax2=fig.add_axes(panel[2])
+        ax2.invert_yaxis()
+        ax2.set_title('QBO Amplitude \n (period = 20-40 months)',size=label_size,weight='demi')
+        ax2.set_xlabel('Amplitude (m/s)',size=label_size)
+        ax2.set_ylabel('Pressure (hPa)',size=label_size)
+        plt.yticks(size=label_size)
+        plt.xticks(size=label_size)
+        plt.yscale('log')
+        plt.grid('on')
+        plt.ylim([100,1])
+        plt.xlim([0,30])
+        era_line, =ax2.plot(amp0[:],level0[:],'k-o')
+        e3sm_line, =ax2.plot(amp1[:],level1[:],'r--o')
+        ax2.legend((era_line,e3sm_line),('ERA-interim','E3SM'),loc='upper right',fontsize=label_size)
+
+        ax3=fig.add_axes(panel[3])
+        ax3.set_title('QBO Power Spectral Density (Eq. 18-22 hPa zonal winds)',size=label_size,weight='demi')
+        ax3.set_xlabel('Period (months)',size=label_size,weight='demi')
+        ax3.set_ylabel('Amplitude (m/s)',size=label_size,weight='demi')
+        plt.yticks(size=label_size)
+        plt.xticks(size=label_size)
+        era_line,=ax3.plot(periodNew,AMPnew0,'k-o')
+        e3sm_line,=ax3.plot(periodNew,AMPnew1,'r--o')
+        plt.xlim((0,50))
+        plt.grid('on')
+        ax3.legend((era_line,e3sm_line),('ERA-interim','E3SM'),loc='upper right',fontsize=label_size)
+        fig.savefig('QBO_combined_diags.png')
+
+        fig=plt.figure(figsize=(14,14))
+        months = min(qbo0.shape[0],qbo1.shape[0])
+        X0,Y0=numpy.meshgrid(numpy.arange(0,months),level0)
+        X1,Y1=numpy.meshgrid(numpy.arange(0,months),level1)
+        cmap2= plt.cm.RdBu_r
+        color_levels0=numpy.arange(-50,51,100./20.)
+        #Panel 0
+        plot_panel(0,fig,'contourf',parameter,label_size,'ERA-interim U 5S-5N',' ','hPa',[0,months],[100,1],'linear','log',X0,Y0,zdata=qbo0.T,plotcolors=cmap2,color_levels=color_levels0,color_ticks=[-50, -25, -5, 5 ,25, 50])
+        #Panel 1
+        plot_panel(1,fig,'contourf',parameter,label_size,'E3SM U 5S-5N','month','hPa',[0,months],[100,1],'linear','log',X1,Y1,zdata=qbo1.T,plotcolors=cmap2,color_levels=color_levels0,color_ticks=[-50, -25, -5, 5 ,25, 50])
+        #Panel 2
+        plot_panel(2,fig,'line',parameter,label_size,'QBO Amplitude \n (period = 20-40 months)','Amplitude (m/s)','Pressure (hPa)',[0,30],[100,1],'linear','log',amp0[:],level0[:],xdata2=amp1[:],ydata2=level0[:],xdata_label='E3SM',xdata2_label='ERA-I')
+        plot_panel(3,fig,'line',parameter,label_size,'QBO Spectral Density (Eq. 18-22 hPa zonal winds)','Period (months)','Amplitude (m/s)',[0,50],[-1,25],'linear','linear',periodNew,AMPnew0,xdata2=periodNew,ydata2=AMPnew1,xdata_label='E3SM',xdata2_label='ERA-I')
+        fig.savefig('QBO_combined_diags_v2.png')
+
+
+        
     
 
     
